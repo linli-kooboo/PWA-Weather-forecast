@@ -16,26 +16,63 @@ var initialData = {
              {date:'21', high:'10℃', low:'1℃', type:'晴'}]
 };
 
+var city = document.querySelector('.city');
+var date = document.querySelector('.date');
+var weather = document.querySelector('.weather');
+var forecast = document.querySelector('.forecast');
+var addBtn = document.querySelector('.add');
+var refreshBtn = document.querySelector('.refresh');
+
 var modal = new Modal();
 
 function format (date) {
   return date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日'
 }
 
+function render(node, arr){
+  var html = "";
+  for(var i=0; i<arr.length; i++){
+    html += `<li class="select__list__item" data-index="${i}">${arr[i]}</li>`;
+  }
+  node.innerHTML = html;
+}
+
 function addClick() {
+  // show modal
   modal.show({
-    title: '请选择城市',
-    content: `<div id="citySelect">
-    <div id="province" class="dropdown">
-      <button class="btn trigger" data-index="0">选择省份&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
-      <ul class="list" data-index="0"></ul>
+    title: '添加城市',
+    content: `<div class="city-select">
+    <div class="city-select__province">
+      <div class="select__btn">选择省份</div>
+      <ul class="select__list"></ul>
     </div>
-    <div id="city" class="dropdown">
-      <button class="btn trigger" data-index="1">选择城市&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
-      <ul class="list" data-index="1"></ul>
+    <div class="city-select__city">
+      <div class="select__btn">选择城市</div>
+      <ul class="select__list"></ul>
     </div>
   </div>`
   });
+
+  modal.on('confirm', function(){
+    city.innerHTML = cityBtn.innerHTML;
+  })
+
+  // node of province and city
+  var provinceList = document.querySelector('.city-select__province .select__list');
+  var cityList = document.querySelector('.city-select__city .select__list');
+  var provinceBtn = document.querySelector('.city-select__province .select__btn');
+  var cityBtn = document.querySelector('.city-select__city .select__btn');
+  // render province and city information
+  var provinceData = [];
+  address.map(i => provinceData.push(i[0]));
+  render(provinceList, provinceData);
+  provinceList.addEventListener('click', function (event){
+    provinceBtn.innerHTML = event.target.innerHTML;
+    render(cityList, address[event.target.dataset.index][1])
+  }, false);
+  cityList.addEventListener('click', function (event){
+    cityBtn.innerHTML = event.target.innerHTML;
+  },false);
 }
 
 function refreshClick() {
@@ -43,12 +80,6 @@ function refreshClick() {
 }
 
 (function (){
-  var city = document.querySelector('.city');
-  var date = document.querySelector('.date');
-  var weather = document.querySelector('.weather');
-  var forecast = document.querySelector('.forecast');
-  var addBtn = document.querySelector('.add');
-  var refreshBtn = document.querySelector('.refresh');
   var html = '';
 
   // initial information

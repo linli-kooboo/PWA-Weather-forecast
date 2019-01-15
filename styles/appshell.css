@@ -45,3 +45,33 @@ body {
   display: flex;
   justify-content: space-between;
 }
+.city-select {
+  display: flex;
+  justify-content: space-between;
+}
+.select__btn {
+  width: 100px;
+  padding: 5px;
+  font-size: 12px;
+  text-align: center;
+  color: #333;
+  background: #eee;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.select__list {
+  padding: 0;
+  width: 110px;
+  max-height: 100px;
+  overflow: auto;
+}
+.select__list__item {
+  width: 100px;
+  padding: 5px;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  list-style-type: none;
+  cursor: pointer;
+}
