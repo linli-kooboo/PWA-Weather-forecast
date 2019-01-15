@@ -9,13 +9,11 @@ var initialData = {
     img: './images/fine.png',
     temperature: '10℃'
   },
-  forecast: [{date:'15', high:'10℃', low:'1℃', type:'晴'},
-             {date:'16', high:'10℃', low:'1℃', type:'晴'},
-             {date:'17', high:'10℃', low:'1℃', type:'晴'},
-             {date:'18', high:'10℃', low:'1℃', type:'晴'},
-             {date:'19', high:'10℃', low:'1℃', type:'晴'},
-             {date:'20', high:'10℃', low:'1℃', type:'晴'},
-             {date:'21', high:'10℃', low:'1℃', type:'晴'}]
+  forecast: [{date:'15', high:'高温 10℃', low:'低温 1℃', type:'晴'},
+             {date:'16', high:'高温 10℃', low:'低温 1℃', type:'晴'},
+             {date:'17', high:'高温 10℃', low:'低温 1℃', type:'晴'},
+             {date:'18', high:'高温 10℃', low:'低温 1℃', type:'晴'},
+             {date:'19', high:'高温 10℃', low:'低温 1℃', type:'晴'}]
 };
 
 var city = document.querySelector('.city');
@@ -58,6 +56,7 @@ function addClick() {
   modal.on('confirm', function(){
     city.innerHTML = cityBtn.innerHTML;
     storage.setItem("city", city.innerHTML);
+    getForecast();
   })
 
   // node of province and city
@@ -82,17 +81,54 @@ function refreshClick() {
   window.location.reload();
 }
 
-(function (){
-  var html = '';
-  var data = initialData;
+function getForecast() {
+  var url = 'https://www.apiopen.top/weatherApi?city=' + city.innerHTML;
+  // add cache logic
+  if ('caches' in window) {
+    /*
+     * Check if the service worker has already cached this city's weather
+     * data. If the service worker has the data, then display the cached
+     * data while the app fetches the latest data.
+     */
+    caches.match(url).then(function(response) {
+      if (response) {
+        response.json().then(function updateFromCache(json) {
+          var results = json.data.forecast;
+          updateForecastCard(results);
+        });
+      }
+    });
+  }
 
-  // initial information
-  city.innerHTML = data.city;
-  date.innerHTML = data.date;
-  weather.innerHTML = `<img src="${data.weather.img}">
-                       <span>${data.weather.temperature}</span>`;
-  html = '';
-  data.forecast.map(
+  // Fetch the latest data.
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function() {
+    if (request.readyState === XMLHttpRequest.DONE) {
+      if (request.status === 200) {
+        var response = JSON.parse(request.response);
+        var results = response.data.forecast;
+        updateForecastCard(results);
+      }
+    } else {
+      // Return the initial weather forecast since no data is available.
+      updateForecastCard(initialData.forecast);
+    }
+  };
+  request.open('GET', url);
+  request.send();
+}
+
+function updateForecastCard(data) {
+  if(!data) return
+  initialData.forecast = []
+  data.map(i => initialData.forecast.push({
+    date: parseInt(i.date),
+    high: i.high.slice(3),
+    low: i.low.slice(3),
+    type: i.type
+  }));
+  var html = '';
+  initialData.forecast.map(
     i => `<div class="forecast__info">
             <div class="forecast__info__date">${i.date}</div>
             <div class="forecast__info__weather">${i.type}</div>
@@ -101,8 +137,27 @@ function refreshClick() {
           </div>`
   ).map(i => html += i);
   forecast.innerHTML = html;
+}
+
+(function (){
+  var data = initialData;
+
+  // initial information
+  city.innerHTML = data.city;
+  date.innerHTML = data.date;
+  weather.innerHTML = `<img src="${data.weather.img}">
+                       <span>${data.weather.temperature}</span>`;
+  getForecast();
+  updateForecastCard();
 
   // add click event for add button and refresh button
   addBtn.addEventListener('click', addClick,false)
   refreshBtn.addEventListener('click', refreshClick,false)
+
+  // add service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+             .register('./sw.js')
+             .then(function() { console.log('Service Worker Registered'); });
+  }  
 })();
