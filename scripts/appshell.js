@@ -139,6 +139,29 @@ function updateForecastCard(data) {
   forecast.innerHTML = html;
 }
 
+function notifyMe(content) {
+  // Let's check if the browser supports notifications
+  if (!("Notification" in window)) {
+    console.log("This browser does not support desktop notification");
+  }
+
+  // Let's check whether notification permissions have alredy been granted
+  else if (Notification.permission === "granted") {
+    // If it's okay let's create a notification
+    var notification = new Notification(content);
+  }
+
+  // Otherwise, we need to ask the user for permission
+  else if (Notification.permission !== 'denied' || Notification.permission === "default") {
+    Notification.requestPermission(function (permission) {
+      // If the user accepts, let's create a notification
+      if (permission === "granted") {
+        var notification = new Notification(content);
+      }
+    });
+  }
+}
+
 (function (){
   var data = initialData;
 
@@ -158,6 +181,14 @@ function updateForecastCard(data) {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker
              .register('./sw.js')
-             .then(function() { console.log('Service Worker Registered'); });
+             .then(() =>  {
+                window.addEventListener('offline', function() {
+                  notifyMe('网络连接已断开，目前使用缓存数据 :)');
+                });
+                window.addEventListener('online', function() {
+                  notifyMe('网络已连接，请刷新页面查看数据 :)');
+                });           
+                console.log('Service Worker Registered');
+              });
   }  
 })();
