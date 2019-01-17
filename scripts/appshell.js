@@ -180,7 +180,7 @@ function notifyMe(content) {
   // add service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker
-             .register('./sw.js')
+             .register('./sw.js?v=1')
              .then(() =>  {
                 window.addEventListener('offline', function() {
                   notifyMe('网络连接已断开，目前使用缓存数据 :)');
